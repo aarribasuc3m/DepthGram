@@ -25,8 +25,8 @@ with dependence across dimensions and outliers
 
 10. Comparison_ComputingTimes.R: R code to compare computing times of DepthGram, MS-plot and FOM (as detailed in the Supplementary Materials)
 
-List of folders:
+List of folders needed:
 
-1. msplot_code: Code for ms-plot . Should be downloaded from  from  https://www.tandfonline.com/doi/suppl/10.1080/10618600.2018.1473781?scroll=top, supplement.rar
+1. msplot_code: Code for ms-plot . To be downloaded from  from  https://www.tandfonline.com/doi/suppl/10.1080/10618600.2018.1473781?scroll=top, supplement.rar
 
-2. Sample_Results_Files: sample output files of the simulation study to be used in Figures_Code.R (to reproduce Figure 6 and similar ones)
+2. Sample_Results_Files: sample output files of the simulation study to be used in Figures_Code.R (to reproduce Figure 6 and similar ones). Available under request (large RData files)
