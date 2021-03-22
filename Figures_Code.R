@@ -228,8 +228,8 @@ ggplot(depths, aes(x=1-mei, y=mbd) ) + stat_density_2d(aes(alpha = stat(nlevel),
 rm(depths)
 
 
-###### Figure 7  #######            model=1, 2 for Figure 7
-########################            model=3, 4 for Figures 8 and 9 in the Supplementary Materials
+###### Figures 7,8  #######            model=1, 2 for Figures 7, 8
+###########################            model=3, 4 for Figures 8 and 9 in the Supplementary Materials
 n=85       #nb. of non-outlying curves
 n.out=15   #nb. of outlying curves
 type=7     #all magnitude, shape and joint outliers
