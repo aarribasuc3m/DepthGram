@@ -5,7 +5,6 @@ library(ggplot2)
 source("depthGram.R")
 source("depthGramPlot.R")
 source("Sim_MultFunData.R")
-
 ####### Figure 1 #######
 ########################
 
@@ -149,17 +148,15 @@ c=1        #contamination proportion
 time_grid = seq( 0, 1, length.out = N )
 
 #colors for plots
-hues = seq(95, 145, length=6)  #green scale
-color.mg <- hcl(h=hues, l=65, c=100)[1:5]
-hues = seq(220, 270, length=6)  #blue scale
-color.sh <- hcl(h=hues, l=65, c=100)[1:5]
-hues=seq(0,40,length=6)  #red scale
-color.jt <- hsv(h=hues/360,s=1,v=1)[1:5]
 
-color<-c(rep(8,n-3),rep(1,3),color.mg,color.sh,color.jt)
-lw=c(rep(0.5,n-3),rep(2,3),rep(2,n.out))
+color.mg <- hcl(h=210, l=c(40,50,60,70,80), c=c(20,40,60,80,100)) #blue scale for magnitude outliers
+color.sh <- c("coral","indianred1","firebrick1","orangered","red2") #pink/red scale for shape outliers
+color.jt <-c("#4A047D", "#650AA8", "#8D20DD", "#AF56F1", "#D7A0FF") #purple scale for magnitude outliers
+
+color<-c(rep("grey80",n-2),rep(1,2),color.mg,color.sh,color.jt)
+lw=c(rep(0.5,n-2),rep(0.5,2),rep(0.8,n.out-5),rep(1.2,5))
 lt=rep(1,n+n.out)
-lt[(n-2):n]=1:3
+lt[n-1] <-2
 
 
 for (i in 1:4) {
@@ -167,6 +164,7 @@ for (i in 1:4) {
     #### i-th Row - Model i
     Data<-Sim_mfdata(n,N,p,n.out,c,model=i,type.out=type)$values
     ### Plot
+    
     plot(mfData(time_grid,list(Data[[1]],Data[[3000]],Data[[7001]],Data[[10000]])),col=color,lwd=lw,lty=lt,
       xlab = 't', ylab = list( expression("x"[1]*"(t)"), expression("x"[3000]*"(t)"), expression("x"[7001]*"(t)") , expression("x"[10000]*"(t)") ),
       main = list( '1st dimension', '3000th dimension', '7001st dimension', '10000th dimension'  ) )
@@ -200,7 +198,7 @@ for(crate in c(0,0.25,0.5,0.75,1)){
       A<-lapply(resultsDG,function(x){data.frame(mbd=c(x$mbd.mei.d,x$mbd.mei.t,x$mbd.mei.t2), mei=c(x$mei.mbd.d,x$mei.mbd.t,x$mei.mbd.t2))})
       depths<-rbind(depths,do.call(rbind,A))
       
-      if (c==1){  l=length(resultsDG) }
+      if (crate==1){  l=length(resultsDG) }
       
       rm(resultsDG,A) 
 }
@@ -236,7 +234,7 @@ type=7     #all magnitude, shape and joint outliers
 N=100      #nb. of time points
 p=50       #dimension
 c=1        #contamination proportion
-model=1    #simulation model: model=1 for Figure 10, model=2 for Figure 11
+model=1    #simulation model
 
 ### Data generation
 Sim<-Sim_mfdata(n,N,p,n.out,c=c,model=model,type.out=type)
@@ -244,11 +242,8 @@ Sim<-Sim_mfdata(n,N,p,n.out,c=c,model=model,type.out=type)
 Data<-Sim$values
 
 ### colors for plots
-hues = seq(15, 375, length=n.out+1)
-color <- hcl(h=hues, l=65, c=100)[1:n.out]
-color <- c(rep(8,n),color)
+color <- c(rep(8,n),color.mg,color.sh,color.jt) #colors for magnitude, shape and joint outliers defined above
 ids=c(rep("",n),as.character((n+1):(n+n.out)))
-
 
 #### Top Row - DepthGram 
 
@@ -287,7 +282,7 @@ fom_ggplot(FOM_X2, col=color,cutoff = TRUE,ids=ids,subtit="1-dim",sp=3,st=5)
 # USE OF functions and code in msplot_code folder to implement MSplot 
 # (msplot_code folder as downloaded from  https://www.tandfonline.com/doi/suppl/10.1080/10618600.2018.1473781?scroll=top, supplement.rar)
 
-# source("msplot_code/loading.R")   #auxiliary functions for msplot: PACKAGES INSTALLATION MIGHT BE REQUIRED!
+source("msplot_code/loading.R")   #auxiliary functions for msplot: PACKAGES INSTALLATION MIGHT BE REQUIRED!
 source("msplot_code/msplot.R")    #msplot function
 source("msplot_code/DirOut.R")    
 #Functional p-variate version
@@ -310,6 +305,11 @@ MS_X2<-DirOut(data = X3d[,,1], depth.dir="RP",D_value=TRUE)  #Outlyingness calcu
 msplot_ggplot(MS_X2,col=color,ids=ids,subtit="1-dim",sp=3,st=5)
 #msplot(data = X3d[,,1], depth.dir="RP",dirout=T,col.normal=8)
 
+
+######################## 
+# See MOTOR_LANGUAGE_tFMRI_Examples.R for
+# Figures 10 and 11 in the Supplementary Materials
+########################
 
 ######################## 
 # See Comparison_ComputingTimes.R for
