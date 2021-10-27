@@ -12,21 +12,25 @@ List of files:
 
 4. Figures_Code.R: R code to reproduce all the figures in the paper
 
-5. other_functions.R: auxiliary functions to plot FOM and ms-plot matching aesthetics with DepthGram
+5. MOTOR_LANGUAGE_tFMRI_Examples.R: R code to reproduce the analysis on the motor and language tFMRI experiments
 
-6. OutDetectionRule_DG.R: R code for a basic outlier detection rule for the DepthGram
+6. other_functions.R: auxiliary functions to plot FOM and ms-plot matching aesthetics with DepthGram
 
-7. Sim_MultFunData.R: R function to generate multivariate functional data 
+7. OutDetectionRule_DG.R: R code for a basic outlier detection rule for the DepthGram
+
+8. Sim_MultFunData.R: R function to generate multivariate functional data 
 with dependence across dimensions and outliers
 
-8. Simulations_LowDim.R: R code for the low-dimensional simulation study in the paper
+9. Simulations_LowDim.R: R code for the low-dimensional simulation study in the paper
 
-9. Simulations.R: R code for the high-dimensional simulation study in the paper
+10. Simulations.R: R code for the high-dimensional simulation study in the paper
 
-10. Comparison_ComputingTimes.R: R code to compare computing times of DepthGram, MS-plot and FOM (as detailed in the Supplementary Materials)
+11. Comparison_ComputingTimes.R: R code to compare computing times of DepthGram, MS-plot and FOM (as detailed in the Supplementary Materials)
 
-List of folders needed:
+List of folders:
 
-1. msplot_code: Code for ms-plot . To be downloaded from  from  https://www.tandfonline.com/doi/suppl/10.1080/10618600.2018.1473781?scroll=top, supplement.rar
+1. msplot_code: Code for ms-plot . Should be downloaded from  from  https://www.tandfonline.com/doi/suppl/10.1080/10618600.2018.1473781?scroll=top, supplement.rar
 
-2. Sample_Results_Files: sample output files of the simulation study to be used in Figures_Code.R (to reproduce Figure 6 and similar ones). Available under request (large RData files)
+2. Sample_Results_Files: sample output files of the simulation study to be used in Figures_Code.R (to reproduce Figure 6 and similar ones)
+
+3. tFMRI_experiments_files: files with intermediate results from the analysis of the motor and language tFMRI experiments. To be used in MOTOR_LENGUAGE_tFMRI_Examples.R
