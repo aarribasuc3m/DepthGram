@@ -29,7 +29,7 @@ with dependence across dimensions and outliers
 
 List of folders:
 
-1. msplot_code: Code for ms-plot . Should be downloaded from  from  https://www.tandfonline.com/doi/suppl/10.1080/10618600.2018.1473781?scroll=top, supplement.rar
+1. msplot_code: Code for ms-plot . NOT PROVIDED. To be downloaded from  from  https://www.tandfonline.com/doi/suppl/10.1080/10618600.2018.1473781?scroll=top, supplement.rar
 
 2. Sample_Results_Files: sample output files of the simulation study to be used in Figures_Code.R (to reproduce Figure 6 and similar ones)
 
