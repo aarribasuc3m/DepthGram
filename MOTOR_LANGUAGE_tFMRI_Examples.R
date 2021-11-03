@@ -3,6 +3,7 @@ source("depthGramPlot.R")
 
 #The size of the datasets for the LANGUAGE and Motor tFMRI experiments doesn't allow to build a single list for each experiment
 #containing the whole multivariate functional data set. Therefore, we can not use the function depthGram directly in this setting.
+#In the following, we describe all the steps to conduct the Depthgram analysis on these data sets from individuals nifti files
 
 ###########################
 ### LANGUAGE EXPERIMENT ###
@@ -53,7 +54,7 @@ source("depthGramPlot.R")
 # }
 # rm(vox.N)
 
-### 2. COMPUTATIONS OF MBD AND MEI OVER VOXELS (DIMENSIONS)
+### 2. COMPUTATIONS OF MBD AND MEI OVER VOXELS (DIMENSIONS) AND MARGINAL MAGNITUDE AND SHAPE OUTLIER DETECTION
 
 ## Reading individual files, extraction of signal in the intersection mask, storing in different files by blocks of 10000 voxels
 
@@ -61,8 +62,14 @@ source("depthGramPlot.R")
 # p=p.min
 # p.times=ceiling(p/p.div)
 
-# mbd.d <-array(0,dim=c(n,p))
-# mei.d <-array(0,dim=c(n,p))
+# mbd.d <-array(0,dim=c(n,p))   #array for mbd over voxels
+# mei.d <-array(0,dim=c(n,p))   #array for mei over voxels
+# mag.out.det<-list(length=p)   #list for marginal magnitude outliers detection
+# shp.out.det<-list(length=p)   #list for marginal shape outliers detection
+# n2=ceiling(n*0.5)
+# a2=a0=-2/(n*(n-1))            #values for marginal shape outlier detection
+# a1=2*(n+1)/(n-1)
+# FO = FB = 1.5                 #values for marginal shape and magnitude outlier detection 
 
 ## For each block of 10000 voxels, we read all individuals data and store into a list (each list element corresponds to a voxel)
 
@@ -71,8 +78,6 @@ source("depthGramPlot.R")
 #   b=min(p,(p.div*j))
 #   a=p.div*(j-1)+1
 #   r=b-a+1
-#   aN=(a-1)*N+1
-#   bN=b*N
 #   
 #   mat.ind<-c() 
 #   
@@ -86,21 +91,45 @@ source("depthGramPlot.R")
 #   for (k in 1:r){                    #Each element is an N*n matrix
 #     fmri.vx.list[[k]]<-matrix(mat.ind[k,],nrow=N)
 #   
-#     ### mbd and mei calculations over voxels (we don't use roadh::MBD and roah::MEI to share common computations and speed the process)
+#     ### mbd and mei calculations over voxels (we don't use roadh::MBD and roah::MEI to share common computations and speed up the process)
 #     i=a+k-1
 #     x<-t(fmri.vx.list[[k]])  #transpose because fmri.vx.list[[k]] is N*n and not n*N 
 #     rk = apply(x, 2, function(v) (rank(v)))
 #     up=n-rk
 #     mbd.d[,i] = (rowSums(up * (rk - 1))/N + n - 1)/(n * (n - 1)/2)
 #     mei.d[,i] = rowSums(up+1)/(n*N)
-#   }
+#
+#    ### Marginal magnitude and shape outlier detection (we don't use roahd::fbplot and roahd::outliergram to share common computations and speed up the process)
+# 
+#    index<-order(mbd.d[,i],decreasing=T)  
+#    center=x[index[1:n2],]
+#    inf=apply(center,2,min)
+#    sup=apply(center,2,max)
+#    dist=FB*(sup-inf)
+#    upper=sup+dist
+#    lower=inf-dist
+#    mag.out.det[[i]]<-which(colSums((t(x) <= lower) + (t(x) >= upper))>0)
+#    dist=(a0+a1*mei.d[,i]+a2*n^2*mei.d[,i]^2)-mbd.d[,i]
+#    q=quantile(dist,probs = c(0.25,0.75))
+#    lim=FO*(q[2]-q[1])+q[2]
+#    shp.out.det[[i]]<- which(dist>lim) 
+#    rm(index,center,inf,sup,dist,upper,lower,q,lim)
+#  }
 #   
 #   save(fmri.vx.list,file=paste0("datos_fmriLANGUAGE_voxels_",a,"_to_",b ,".RData"))
 #   rm(fmri.vx.list,mat.ind)
 # }
 # 
-# save(mbd.d,file="LANGUAGE_maskMAX_mbd_vxl_by_vxl.RData")
-# save(mei.d,file="LANGUAGE_maskMAX_epi_vxl_by_vxl.RData")
+# p1 = round(p/2)   # Due to file size constraints in GitHub repositories, mbd.d and mei.d matrices are split and saved in 2 different files each
+# mbd.d1=mbd.d[,1:p1]
+# mbd.d2=mbd.d[,(p1+1):p]
+# mei.d1=mei.d[,1:p1]
+# mei.d2=mei.d[,(p1+1):p]
+# save(mbd.d1,file="LANGUAGE_mbd_by_voxel1.RData")
+# save(mbd.d2,file="LANGUAGE_mbd_by_voxel2.RData")
+# save(mei.d1,file="LANGUAGE_mei_by_voxel1.RData")
+# save(mei.d2,file="LANGUAGE_mei_by_voxel2.RData")
+# save(mag.out.det, shp.out.det, file="LANGUAGE_marginal_outliers_by_voxel.RData")
 
 
 ### 3. COMPUTATIONS OF MBD AND MEI OVER TIME (ORIGINAL DATA SET AND "CORRELATION CORRECTED" DATA SET)
@@ -114,10 +143,10 @@ source("depthGramPlot.R")
 #   }
 # }
 
-# mbd.t <-array(0,dim=c(n,N))
-# mei.t <-array(0,dim=c(n,N))
-# mbd.t2 <-array(0,dim=c(n,N))
-# mei.t2 <-array(0,dim=c(n,N))
+# mbd.t <-array(0,dim=c(n,N))   #array for mbd over time
+# mei.t <-array(0,dim=c(n,N))   #array for mei over time
+# mbd.t2 <-array(0,dim=c(n,N))  #array for mbd over time/corr
+# mei.t2 <-array(0,dim=c(n,N))  #array for mei over time/corr
 
 # for (j in 1:N){ #j stands for each possible time point
   
@@ -159,14 +188,17 @@ source("depthGramPlot.R")
 
 ### 4. FINAL CALCULATIONS FOR THE LANGUAGE EXPERIMENT (the files required from this step are provided)
 
-# Load the data
-load(file="tFMRI_experiment_files/LANGUAGE_mbd_by_voxel.RData") #contains mbd.d, the mbd matrix on voxels (dimensions)
-load(file="tFMRI_experiment_files/LANGUAGE_mei_by_voxel.RData") #contains mei.d, the mei matrix on voxels (dimensions)
+# Load the data (due to file size constraints in GitHub repositories, mbd.d and mei.d matrices were split and saved in 2 different files each)
+load(file="tFMRI_experiment_files/LANGUAGE_mbd_by_voxel1.RData") #contains mbd.d1, 1st part of mbd.d, the mbd matrix on voxels (dimensions)
+load(file="tFMRI_experiment_files/LANGUAGE_mbd_by_voxel2.RData") #contains mbd.d2, 2nd part of mbd.d, the mbd matrix on voxels (dimensions)
+mbd.d = cbind(mbd.d1,mbd.d2)
+load(file="tFMRI_experiment_files/LANGUAGE_mei_by_voxel1.RData") #contains mei.d1, 1st part of mei matrix on voxels (dimensions)
+load(file="tFMRI_experiment_files/LANGUAGE_mei_by_voxel2.RData") #contains mei.d2, 2nd part of mei matrix on voxels (dimensions)
+mei.d = cbind(mei.d1, mei.d2)
 load(file="tFMRI_experiment_files/LANGUAGE_mbd_by_time.RData") #contains mbd.t, the mbd matrix for time
 load(file="tFMRI_experiment_files/LANGUAGE_mei_by_time.RData") #contains mei.t, the mei matrix for time
 load(file="tFMRI_experiment_files/LANGUAGE_mbd_by_time_corr.RData") #contains mbd.t2, the mbd matrix for time/corr
 load(file="tFMRI_experiment_files/LANGUAGE_mei_by_time_corr.RData") #contains mei.t2, the mei matrix for time/corr
-
 
 # Build the object output of the DepthGram function by calculating mbd of mei and
 # mei of mbd for voxels, time and time/correlation (MBD and MEI functions in roahd package)
@@ -183,18 +215,29 @@ ids[c(81,84,86)] <- as.character(c(81,84,86))
 DGplot <- depthGramPlot(DG, print=T, text.labels=ids, ax.lims=F)
 
 
+### 6. MARGINAL OUTLIERS VOXEL-WISE FOR THE LANGUAGE EXPERIMENT
+
+load(file="tFMRI_experiment_files/LANGUAGE_marginal_outliers_by_voxel.RData") #contains lists mag.out.det and shp.out.det with the ids of potential magnitude and shape outliers on each voxel
+
+sort(table(unlist(shp.out.det)),decreasing = T)  #To see the number of voxels in which each individual has been detected as shape outlier
+sort(table(unlist(mag.out.det)),decreasing = T)  #To see the number of voxels in which each individual has been detected as magnitude outlier
+
 ###########################
 #### MOTOR EXPERIMENT #####
 ###########################
 
-### 1 to 3 AS ABOVE (we provide the resulting data sets requiered for points 5 and 6)
+### 1 to 3 AS ABOVE (we provide the resulting data sets required for points 4 and 5)
 
 
 ### 4. FINAL CALCULATIONS FOR THE MOTOR EXPERIMENT (the files required from this step are provided)
 
-# Load the data
-load(file="tFMRI_experiment_files/MOTOR_mbd_by_voxel.RData") #contains mbd.d, the mbd matrix on voxels (dimensions)
-load(file="tFMRI_experiment_files/MOTOR_mei_by_voxel.RData") #contains mei.d, the mei matrix on voxels (dimensions)
+# Load the data (due to file size constraints in GitHub repositories, mbd.d and mei.d matrices were split and saved in 2 different files each)
+load(file="tFMRI_experiment_files/MOTOR_mbd_by_voxel1.RData") #contains mbd.d1, 1st part of mbd.d, the mbd matrix on voxels (dimensions)
+load(file="tFMRI_experiment_files/MOTOR_mbd_by_voxel2.RData") #contains mbd.d2, 2nd part of mbd.d, the mbd matrix on voxels (dimensions)
+mbd.d = cbind(mbd.d1,mbd.d2)
+load(file="tFMRI_experiment_files/MOTOR_mei_by_voxel1.RData") #contains mei.d1, 1st part of mei matrix on voxels (dimensions)
+load(file="tFMRI_experiment_files/MOTOR_mei_by_voxel2.RData") #contains mei.d2, 2nd part of mei matrix on voxels (dimensions)
+mei.d = cbind(mei.d1, mei.d2)
 load(file="tFMRI_experiment_files/MOTOR_mbd_by_time.RData") #contains mbd.t, the mbd matrix for time
 load(file="tFMRI_experiment_files/MOTOR_mei_by_time.RData") #contains mei.t, the mei matrix for time
 load(file="tFMRI_experiment_files/MOTOR_mbd_by_time_corr.RData") #contains mbd.t2, the mbd matrix for time/corr
@@ -215,3 +258,10 @@ ids[c(20,28,30,39,66,81,89)] <- as.character(c(20,28,30,39,66,81,89))
 
 DGplot <- depthGramPlot(DG, print=T, text.labels=ids, ax.lims=F)
 
+
+### 6. MARGINAL OUTLIERS VOXEL-WISE FOR THE MOTOR EXPERIMENT
+
+load(file="tFMRI_experiment_files/MOTOR_marginal_outliers_by_voxel.RData") #contains lists mag.out.det and shp.out.det with the ids of potential magnitude and shape outliers on each voxel
+
+sort(table(unlist(shp.out.det)),decreasing = T)  #To see the number of voxels in which each individual has been detected as shape outlier
+sort(table(unlist(mag.out.det)),decreasing = T)  #To see the number of voxels in which each individual has been detected as magnitude outlier
