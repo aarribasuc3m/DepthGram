@@ -1,6 +1,6 @@
 # DepthGram
 THESE ARE THE FILES ACCOMPANYING THE PAPER: "Depthgram: Visualizing Outliers in High
-Dimensional Functional Data with application to Task fMRI data exploration"
+Dimensional Functional Data with application to fMRI data exploration"
 
 List of files:
 
