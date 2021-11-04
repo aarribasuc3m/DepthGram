@@ -64,6 +64,11 @@ source("depthGramPlot.R")
 
 # mbd.d <-array(0,dim=c(n,p))   #array for mbd over voxels
 # mei.d <-array(0,dim=c(n,p))   #array for mei over voxels
+# corr.mei<-vector("numeric",length=p)  #p length vector containing the sign of correlation between mei in each dimension and the next one
+# corr.mei[1]=1
+# wp<-c()  #storing components in which -1 transformation will be applied (since negative mei correlation exists)
+
+
 # mag.out.det<-list(length=p)   #list for marginal magnitude outliers detection
 # shp.out.det<-list(length=p)   #list for marginal shape outliers detection
 # n2=ceiling(n*0.5)
@@ -92,12 +97,18 @@ source("depthGramPlot.R")
 #     fmri.vx.list[[k]]<-matrix(mat.ind[k,],nrow=N)
 #   
 #     ### mbd and mei calculations over voxels (we don't use roadh::MBD and roah::MEI to share common computations and speed up the process)
-#     i=a+k-1
+#     i=a+k-1  # voxel number
 #     x<-t(fmri.vx.list[[k]])  #transpose because fmri.vx.list[[k]] is N*n and not n*N 
 #     rk = apply(x, 2, function(v) (rank(v)))
 #     up=n-rk
 #     mbd.d[,i] = (rowSums(up * (rk - 1))/N + n - 1)/(n * (n - 1)/2)
 #     mei.d[,i] = rowSums(up+1)/(n*N)
+#     # MEI correlation between i and i-1 dimensions (for time/correlation calculations, see point 3)
+#     if(i>1){corr.mei[i]=corr.mei[i-1]*sign(cor(mei.d[,i],mei.d[,i-1]))}
+#     if(corr.mei[i]==-1){
+#       wp=c(wp,i)
+#     }
+
 #
 #    ### Marginal magnitude and shape outlier detection (we don't use roahd::fbplot and roahd::outliergram to share common computations and speed up the process)
 # 
@@ -166,17 +177,18 @@ source("depthGramPlot.R")
   # mbd.t[,j] = (rowSums(up * (rk - 1))/p + n - 1)/(n * (n - 1)/2)
   # mei.t[,j]<-rowSums(up+1)/(n*p)
 
-  ### mbd and mei calculations on the "correlation corrected" sample
-
-  # mat.ind2=mat.ind
-  # mat.ind2[,p_coord]=-1*mat.ind[,p_coord]
-  # rk = apply(mat.ind2, 2, function(v) (rank(v)))  
-  # up=n-rk
-  # mbd.t2[,j] = (rowSums(up * (rk - 1))/p + n - 1)/(n * (n - 1)/2)
-  # epi.t2[,j]<-rowSums(up+1)/(n*p)
+  # #MBD and MEI computation on dimension i for the "corrected" data set
+  # if(length(wp)>0){  # wp is the p length vector storing components in which -1 transformation will be applied (since negative mei correlation exists)
+  #   down[,wp]=n-rmat[,wp]
+  #   up[,wp]=rmat[,wp]-1
+  #   mbd.t2[,j]<-(rowSums(up*down)/p+n-1)/(n*(n-1)/2)  
+  #   mei.t2[,j]<-rowSums(up+1)/(n*p)
+  # }else{
+  #   mbd.t2[,j]<-mbd.t[,j]
+  #   mei.t2[,j]<-mei.t[,j]
+  # }
   
   # save(mat.ind,file=paste0("datos_fmriLANGUAGE_time_point_",j,".RData"))
-  # save(mat.ind2,file=paste0("datos_fmriLANGUAGE_time_point2_",j,".RData"))
   # rm(mat.ind,rk,up)
 # }
 
