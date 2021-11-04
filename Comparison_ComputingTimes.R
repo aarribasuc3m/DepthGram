@@ -13,10 +13,9 @@ cl <- makeCluster(cores[1]-1) # nb. of cores depending on the system specificati
 registerDoParallel(cl)
 
 # Loading required functions and libraries on clusters
-clusterCall(cl, function() source("depthGram.R"))
-clusterCall(cl, function() source("msplot_code/loading.R"))  #auxiliary functions for msplot: PACKAGES INSTALLATION MIGHT BE REQUIRED!
-clusterCall(cl, function() source("msplot_code/msplot.R"))   #msplot function
-clusterCall(cl, function() library(mrfDepth))                #library for fom
+clusterCall(cl, function() {source("depthGram.R")})
+clusterCall(cl, function() {source("msplot_code/loading.R")})  #functions for msplot: PACKAGES INSTALLATION MIGHT BE REQUIRED!
+clusterCall(cl, function() {library(mrfDepth)})                #library for fom
 
 ###########################################
 #LOW-DIM SETTING: DepthGram, FOM AND MSplot 
@@ -29,8 +28,8 @@ lN = length(N)
 
 Times = array (dim=c(lp,5,lN))
 
-for (k in 1:lN){   
-  
+#for (k in 1:lN){   
+  for (k in 2:lN){   
       results_CompTimes <- foreach(j=1:lp) %dopar% { 
         
         # Data generation in form of a 3d array
@@ -79,7 +78,6 @@ for (k in 1:lN){
       }
       
       Times[,,k] = matrix(unlist(results_CompTimes),ncol=5,byrow=T)
- 
 }      
 
 Times = reshape2::melt(Times)
@@ -142,7 +140,6 @@ results_CompTimes <- foreach(j=1:lp) %dopar% {
     rm(Data)
 
     results = c(DG,MSplot,MSplot1d)
-    save(results, file=paste0("results_p_",p[j],".RData"))
     return(results)
 }
   
